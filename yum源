@@ -1,0 +1,26 @@
+虚拟机中linux使用本地iso作为yum源
+
+虚拟机中linux使用本地iso作为yum源
+
+虚拟机中的linux有时不能连接上外网，为了能够方便的安装各种packages，于是调查配置本地yum安装的方法。
+首先，将作为源的iso的挂载到系统上。
+
+mount -o loop /dev/cdrom /mnt/iso/
+或者
+mount -o loop /xxx/xxx.iso /mnt/iso/
+
+其中/mnt/iso是事先在本地建立的文件夹。
+然后将文件iso.repo拷入文件夹/etc/yum.repos.d
+
+如果文件夹/etc/yum.repos.d中有其他*.repo的文件，请备份后删除。
+
+iso.repo的内容如下：
+[iso]
+baseurl=file:///mnt/iso
+gpgkey=file:///mnt/iso/RPM-GPG-KEY-redhat-beta
+failovermethod=priority
+enabled=1
+gpgcheck=0
+最后执行yum update进行yum源的更新
+ 更新完成后就可以使用yum来安装packages了。
+用yum来安装package可以自动找出package之间的依赖关系，并按依赖关系的顺序自动进行安装，非常方便。
