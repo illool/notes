@@ -1,0 +1,99 @@
+centos7.2下安装mysql5.7，使用rpm包安装
+0、环境
+
+本文操作系统: CentOS 7.2.1511 x86_64
+MySQL 版本: 5.7.16
+
+1、卸载系统自带的 mariadb-lib
+
+[root@centos-linux ~]# rpm -qa|grep mariadb
+ mariadb-libs-5.5.44-2.el7.centos.x86_64 
+[root@centos-linux ~]# rpm -e mariadb-libs-5.5.44-2.el7.centos.x86_64 --nodeps
+
+2、下载mysql5.7.16 rpm安装包，官网最新的mysql安装包是mysql-5.7.16-1.el7.x86_64.rpm-bundle.tar下载地址
+
+[root@centos-linux ~]# wget http://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.16-1.el7.x86_64.rpm-bundle.tar
+
+然后解压
+
+
+　[root@linux_node_1 src]# tar -xvf mysql-5.7.16-1.el7.x86_64.rpm-bundle.tar 
+  mysql-community-libs-compat-5.7.16-1.el7.x86_64.rpm
+  mysql-community-devel-5.7.16-1.el7.x86_64.rpm
+  mysql-community-minimal-debuginfo-5.7.16-1.el7.x86_64.rpm
+  mysql-community-libs-5.7.16-1.el7.x86_64.rpm
+  mysql-community-common-5.7.16-1.el7.x86_64.rpm
+  mysql-community-embedded-compat-5.7.16-1.el7.x86_64.rpm
+  mysql-community-test-5.7.16-1.el7.x86_64.rpm
+  mysql-community-embedded-devel-5.7.16-1.el7.x86_64.rpm
+  mysql-community-server-minimal-5.7.16-1.el7.x86_64.rpm
+  mysql-community-server-5.7.16-1.el7.x86_64.rpm
+  mysql-community-client-5.7.16-1.el7.x86_64.rpm
+  mysql-community-embedded-5.7.16-1.el7.x86_64.rpm
+3、安装
+依次执行（几个包有依赖关系，所以执行有先后）下面命令安装
+[root@centos-linux ~]# rpm -ivh mysql-community-common-5.7.16-1.el7.x86_64.rpm 
+[root@centos-linux ~]# rpm -ivh mysql-community-libs-5.7.16-1.el7.x86_64.rpm
+[root@centos-linux ~]# rpm -ivh mysql-community-client-5.7.16-1.el7.x86_64.rpm 
+[root@centos-linux ~]# rpm -ivh mysql-community-server-5.7.16-1.el7.x86_64.rpm
+在安装rpm -ivh mysql-community-server-5.7.16-1.el7.x86_64.rpm的时候报错如下：
+
+  [root@linux_node_1 src]# rpm -ivh mysql-community-server-5.7.16-1.el7.x86_64.rpm 
+  warning: mysql-community-server-5.7.16-1.el7.x86_64.rpm: Header V3 DSA/SHA1 Signature, key ID 5072e1f5: NOKEY
+  error: Failed dependencies:
+  libaio.so.1()(64bit) is needed by mysql-community-server-5.7.16-1.el7.x86_64
+  libaio.so.1(LIBAIO_0.1)(64bit) is needed by mysql-community-server-5.7.16-1.el7.x86_64
+  libaio.so.1(LIBAIO_0.4)(64bit) is needed by mysql-community-server-5.7.16-1.el7.x86_64
+  net-tools is needed by mysql-community-server-5.7.16-1.el7.x86_64
+  这个报错的意思是需要安装libaio包和net-tools包：可以yum安装一下，安装 libaio-0.3.107-10.el6.x86_64.rpm，下载地址：
+wget http://mirror.centos.org/centos/6/os/x86_64/Packages/libaio-0.3.107-10.el6.x86_64.rpm
+然后yum安装net-tools   yum install net-tools  完成之后就可以顺利安装
+4、数据库初始化
+
+为了保证数据库目录为与文件的所有者为 mysql 登陆用户，如果你是以 root 身份运行 mysql 服务，需要执行下面的命令初始化
+mysqld --initialize --user=mysql
+
+
+  如果是以 mysql 身份运行，则可以去掉 --user 选项。
+
+  另外 --initialize 选项默认以“安全”模式来初始化，则会为 root 用户生成一个密码并将该密码标记为过期，登陆后你需要设置一个新的密码，而使用 --initialize-insecure 命令则不使用安全模式，则不会为 root 用户生成一个密码。
+
+  这里演示使用的 --initialize 初始化的，会生成一个 root 账户密码，密码在log文件里，红色区域的就是自动生成的密码
+  [root@linux_node_1 src]# cat /var/log/mysqld.log 
+  2016-12-07T04:41:58.028558Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation for more details).
+  2016-12-07T04:41:58.315188Z 0 [Warning] InnoDB: New log files created, LSN=45790
+  2016-12-07T04:41:58.355114Z 0 [Warning] InnoDB: Creating foreign key constraint system tables.
+  2016-12-07T04:41:58.418448Z 0 [Warning] No existing UUID has been found, so we assume that this is the first time that this server has been started. Generating a new UUID: 7cc98831-bc37-11e6-a263-000c29f902dc.
+  2016-12-07T04:41:58.419935Z 0 [Warning] Gtid table is not ready to be used. Table 'mysql.gtid_executed' cannot be opened.
+  2016-12-07T04:41:58.420558Z 1 [Note] A temporary password is generated for root@localhost: )1r3gi,hjgQa
+  现在启动mysql数据库systemctl start mysqld.service
+  [root@linux_node_1 src]# systemctl start mysqld.service
+  [root@linux_node_1 src]# mysql -uroot -p
+  Enter password: 
+  Welcome to the MySQL monitor.  Commands end with ; or \g.
+  Your MySQL connection id is 2
+  Server version: 5.7.16
+  Copyright (c) 2000, 2016, Oracle and/or its affiliates. All rights reserved.
+  Oracle is a registered trademark of Oracle Corporation and/or its
+  affiliates. Other names may be trademarks of their respective
+  owners.
+  Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+  mysql>
+ 
+  5、修改密码
+ 
+  该密码被标记为过期了，如果想正常使用还需要修改密码
+ 
+mysql> show databases;
+ERROR 1820 (HY000): You must reset your password using ALTER USER statement before executing this statement.
+
+ 
+  以前的 password()函数将会被抛弃，官方建议使用下面的命令来修改密码
+ 
+mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';
+
+ 
+  同时，如果你设置的密码过于简单也会报错。
+ 
+mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY '123';
+ERROR 1819 (HY000): Your password does not satisfy the current policy requirements
