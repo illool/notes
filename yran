@@ -1,0 +1,5 @@
+多次format后 启动Yarn时 datanode消失只有datamanager
+
+/home/hadoop/hdfs/data/current/VERSION
+/home/hadoop/hdfs/name/current/VERSION
+不一致导致的，简单的做法是删除hadoop目录重新格式化，高端的做法是将VERSION文件拷贝使两者统一
