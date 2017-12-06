@@ -106,3 +106,8 @@ mysql>GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT 
 
 重载授权表：
 mysql>FLUSH PRIVILEGES;
+
+添加远程登录用户
+mysql>GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
+重载授权表：
+mysql>FLUSH PRIVILEGES;
