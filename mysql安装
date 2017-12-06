@@ -97,3 +97,6 @@ mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';
  
 mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY '123';
 ERROR 1819 (HY000): Your password does not satisfy the current policy requirements
+
+开机启动
+systemctl enable mysqld
