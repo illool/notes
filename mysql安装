@@ -114,3 +114,13 @@ mysql>FLUSH PRIVILEGES;
 
 创建 hive 数据库
 mysql>create database hive;
+
+systemctl stop firewalld.service #停止firewall
+systemctl disable firewalld.service #禁止firewall开机启动
+
+## sudo vim /etc/my.cnf
+[mysqld]
+skip-networking
+skip-grant-tables
+
+systemctl restart mysqld
