@@ -111,3 +111,6 @@ mysql>FLUSH PRIVILEGES;
 mysql>GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
 重载授权表：
 mysql>FLUSH PRIVILEGES;
+
+创建 hive 数据库
+mysql>create database hive;
