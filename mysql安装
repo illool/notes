@@ -124,3 +124,8 @@ skip-networking
 skip-grant-tables
 
 systemctl restart mysqld
+
+<property>
+        <name>hive.metastore.schema.verification</name>
+        <value>true</value>
+</property>
