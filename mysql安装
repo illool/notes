@@ -100,3 +100,9 @@ ERROR 1819 (HY000): Your password does not satisfy the current policy requiremen
 
 开机启动
 systemctl enable mysqld
+
+添加远程登录用户
+mysql>GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
+
+重载授权表：
+mysql>FLUSH PRIVILEGES;
