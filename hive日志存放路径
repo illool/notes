@@ -18,3 +18,93 @@ Job日志又存储在什么地方呢 ？
 HIVEHISTORYFILELOC("hive.querylog.location", "/tmp/" + System.getProperty("user.name")),
 
 默认存储与 /tmp/{user.name}目录下。
+
+
+Hive uses log4j for logging. By default logs are not emitted to the console by the CLI. The default logging level is WARN for Hive releases prior to 0.13.0. Starting with Hive 0.13.0, the default logging level is INFO.
+
+Hive使用log4j记录日志，默认日志不输出到cli控制台。默认日志级别是warn在hive 0.13.0之前，从hive 0.13.0开始，默认日志输出级别为info。
+
+The logs are stored in the directory /tmp/<user.name>:
+
+日志默认存储在以下目录中：
+
+· /tmp/<user.name>/hive.log
+
+比如：/tmp/root/hive.log
+
+Note: In local mode, prior to Hive 0.13.0 the log file name was ".log" instead of "hive.log". This bug was fixed in release 0.13.0 (see HIVE-5528 and HIVE-5676).
+
+这是一个Bug的说明。
+
+To configure a different log location, set hive.log.dir in $HIVE_HOME/conf/hive-log4j.properties. Make sure the directory has the sticky bit set (chmod 1777 <dir>).
+
+设置一个不同的hive日志位置，通过在$HIVE_HOME/conf/hive-log4j.properties文件中设置hive.log.dir参数。确定这个路径是一个粘滞位权限。
+
+· hive.log.dir=<other_location>
+
+If the user wishes, the logs can be emitted to the console by adding the arguments shown below:
+
+如果你愿意，日志也可以通过如下命令显示在控制台中：
+
+· bin/hive --hiveconf hive.root.logger=INFO,console  //for HiveCLI (deprecated)
+
+· bin/hiveserver2 --hiveconf hive.root.logger=INFO,console
+
+Alternatively, the user can change the logging level only by using:
+
+当然，也可以通过如下方式改变日志级别：
+
+· bin/hive --hiveconf hive.root.logger=INFO,DRFA //for HiveCLI (deprecated)
+
+· bin/hiveserver2 --hiveconf hive.root.logger=INFO,DRFA
+
+Another option for logging is TimeBasedRollingPolicy (applicable for Hive 0.15.0 and above, HIVE-9001) by providing DAILY option as shown below:
+
+· bin/hive --hiveconf hive.root.logger=INFO,DAILY //for HiveCLI (deprecated)
+
+· bin/hiveserver2 --hiveconf hive.root.logger=INFO,DAILY
+
+Note that setting hive.root.logger via the 'set' command does not change logging properties since they are determined at initialization time.
+
+注意通过set命令设置hive.root.logger属性不能改变日志记录属性，因为它是在初始化时确定的。
+
+Hive also stores query logs on a per Hive session basis in /tmp/<user.name>/, but can be configured in hive-site.xml with the hive.querylog.location property.
+
+Hive也存储查询日志在每一个hive session记录在/tmp/<user.name>/，但是可以在hive-site.xml文件中配置属性ive.querylog.location。
+
+Logging during Hive execution on a Hadoop cluster is controlled by Hadoop configuration. Usually Hadoop will produce one log file per map and reduce task stored on the cluster machine(s) where the task was executed. The log files can be obtained by clicking through to the Task Details page from the Hadoop JobTracker Web UI.
+
+当hive在hadoop集群执行期间产生日志是由hadoop配置属性控制的。实际上hadoop会为每一个map或reduce任务产生一个日志文件并且存储在集群上任务执行的那个计算机上。这些日志信息在hadoop web UI界面通过点击任务详细信息看到。
+
+When using local mode (using mapreduce.framework.name=local), Hadoop/Hive execution logs are produced on the client machine itself. Starting with release 0.6 – Hive uses the hive-exec-log4j.properties (falling back to hive-log4j.properties only if it's missing) to determine where these logs are delivered by default. The default configuration file produces one log file per query executed in local mode and stores it under /tmp/<user.name>. The intent of providing a separate configuration file is to enable administrators to centralize execution log capture if desired (on a NFS file server for example). Execution logs are invaluable for debugging run-time errors.
+
+当运行在本地模式时(using mapreduce.framework.name=local)，hadoop/hive运行日志产生在自己机器的客户端产生。从0.6版本开始，hive使用hive-exec-log4j.properties配置文件决定日志保存位置。默认的配置将产生一个log文件记录在本地模式运行的每一个执行动作，并且存储log在/tmp/<user.name>下。提供一个单独的配置文件的目的是如果管理员需要，可以集中捕获执行日志。执行日志对于提供运行时debug错误来说是非常重要的。
+
+For information about WebHCat errors and logging, see Error Codes and Responses and Log Files in the WebHCat manual.
+
+Error logs are very useful to debug problems. Please send them with any bugs (of which there are many!) to hive-dev@hadoop.apache.org.
+
+From Hive 2.1.0 onwards (with HIVE-13027), Hive uses Log4j2's asynchronous logger by default. Setting hive.async.log.enabled to false will disable asynchronous logging and fallback to synchronous logging. Asynchronous logging can give significant performance improvement as logging will be handled in a separate thread that uses the LMAX disruptor queue for buffering log messages. Refer to https://logging.apache.org/log4j/2.x/manual/async.html for benefits and drawbacks.
+
+从hive 2.1.0开始，hive使用log4j2方法实现异步日志方法。设置hive.async.log.enabled为false将会关闭异步日志功能并且回退到同步日志模式。使用异步日志功能可以极大改善性能，日志处理使用一个应用了LMAX disruptor queue的单独线程缓存消息队列。
+HiveServer2 Logs
+
+HiveServer2 operation logs are available to clients starting in Hive 0.14. See HiveServer2 Logging for configuration.
+
+Hiveserver2操作日志从hive0.14开始提供给用户。
+Audit Logs
+
+Audit logs are logged from the Hive metastore server for every metastore API invocation.
+
+审计日志记录hive元数据的访问和每一个api针对元数据的调用。
+
+An audit log has the function and some of the relevant function arguments logged in the metastore log file. It is logged at the INFO level of log4j, so you need to make sure that the logging at the INFO level is enabled (see HIVE-3505). The name of the log entry is "HiveMetaStore.audit".
+
+Audit logs were added in Hive 0.7 for secure client connections (HIVE-1948) and in Hive 0.10 for non-secure connections (HIVE-3277; also see HIVE-2797).
+Perf Logger
+
+In order to obtain the performance metrics via the PerfLogger, you need to set DEBUG level logging for the PerfLogger class (HIVE-12675). This can be achieved by setting the following in the log4j properties file.
+
+log4j.logger.org.apache.hadoop.hive.ql.log.PerfLogger=DEBUG
+
+If the logger level has already been set to DEBUG at root via hive.root.logger, the above setting is not required to see the performance logs.
