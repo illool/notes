@@ -1,0 +1,20 @@
+ 日志记录了程序运行的过程，是一种查找问题的利器。
+
+Hive中的日志分为两种
+1. 系统日志，记录了hive的运行情况，错误状况。
+2. Job 日志，记录了Hive 中job的执行的历史过程。
+
+系统日志存储在什么地方呢 ？
+在hive/conf/ hive-log4j.properties 文件中记录了Hive日志的存储情况，
+默认的存储情况：
+
+hive.root.logger=WARN,DRFA
+hive.log.dir=/tmp/${user.name} # 默认的存储位置
+hive.log.file=hive.log  # 默认的文件名
+
+Job日志又存储在什么地方呢 ？
+
+//Location of Hive run time structured log file
+HIVEHISTORYFILELOC("hive.querylog.location", "/tmp/" + System.getProperty("user.name")),
+
+默认存储与 /tmp/{user.name}目录下。
