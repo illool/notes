@@ -136,3 +136,5 @@ systemctl disable firewalld.service #禁止firewall开机启动
 
 解决连接时LOSE CONNECTION TO MYSQL ....
 set global connect_timeout=60
+
+show create table tablename;
