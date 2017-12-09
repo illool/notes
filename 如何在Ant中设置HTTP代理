@@ -1,0 +1,11 @@
+工作中在构建某一个项目时，要用到ivy来分析和下载项目所依赖的jar包等资源，由于从公司内部访问外网都必须经过http代理服务器，所以在用ant构建该项目时，遇到了问题：如何在ant中设置http代理？  
+    经过尝试，解决方案为：在%ANT_HOME%\bin\ant.bat文件中添加如下代码：
+
+    set ANT_OPTS=-Dhttp.proxyHost=代理服务器地址 -Dhttp.proxyPort=代理服务器端口  
+
+    注意不是(没有引号)：
+    set ANT_OPTS="-Dhttp.proxyHost=代理服务器地址 -Dhttp.proxyPort=代理服务器端口"  
+
+    若代理服务器需要授权口令，则添加以下代码指定用户名和密码：
+    set ANT_OPTS=-Dhttp.proxyHost=代理服务器地址 -Dhttp.proxyPort=代理服务器端口 -Dhttp.proxyUserName=用户名 -Dhttp.proxyPassword=密码  
+
