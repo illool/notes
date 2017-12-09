@@ -1,0 +1,257 @@
+一、 Scrapy简介
+
+Scrapy is a fast high-level screen scraping and web crawling framework, used to crawl websites and extract structured data from their pages. It can be used for a wide range of purposes, from data mining to monitoring and automated testing.
+
+官方主页： http://www.scrapy.org/
+
+ 
+
+二、 安装Python2.7
+
+官方主页：http://www.python.org/
+
+下载地址：http://www.python.org/ftp/python/2.7.3/python-2.7.3.msi
+
+ 
+
+1) 安装python
+
+安装目录：D:\Python27
+
+ 
+
+2) 添加环境变量
+
+略System Properties -> Advanced -> Environment Variables - >System Variables -> Path -> Edit
+
+ 
+
+3) 验证环境变量
+
+T:\>set Path
+Path=C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;D:\Rational\common;D:\Rational\ClearCase\bin;D:\Python27;D:\Python27\Scripts
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH
+ 
+
+4) 验证Python
+
+复制代码
+T:\>python
+Python 2.7.3 (default, Apr 10 2012, 23:31:26) [MSC v.1500 32 bit (Intel)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> exit()
+
+T:\>
+复制代码
+ 
+
+ 
+
+三、 安装Twisted
+
+Twisted is an event-driven networking engine written in Python and licensed under the open source
+
+ 
+
+1) 安装setuptools
+
+Download, build, install, upgrade, and uninstall Python packages -- easily!
+
+官方主页：http://pypi.python.org/pypi/setuptools
+
+下载地址：http://pypi.python.org/packages/2.7/s/setuptools/setuptools-0.6c11.win32-py2.7.exe
+
+安装过程：略
+
+ 
+
+2) 安装Zope.Interface
+
+官方主页：http://pypi.python.org/pypi/zope.interface/
+
+下载地址：http://pypi.python.org/packages/2.7/z/zope.interface/zope.interface-4.0.1-py2.7-win32.egg
+
+安装过程：
+
+复制代码
+T:\>d:
+D:\>cd D:\Python27\Scripts
+D:\Python27\Scripts>easy_install.exe zope.interface-4.0.1-py2.7-win32.egg
+Processing zope.interface-4.0.1-py2.7-win32.egg
+creating d:\python27\lib\site-packages\zope.interface-4.0.1-py2.7-win32.egg
+Extracting zope.interface-4.0.1-py2.7-win32.egg to d:\python27\lib\site-packages
+Adding zope.interface 4.0.1 to easy-install.pth file
+
+Installed d:\python27\lib\site-packages\zope.interface-4.0.1-py2.7-win32.egg
+Processing dependencies for zope.interface==4.0.1
+Finished processing dependencies for zope.interface==4.0.1
+
+D:\Python27\Scripts>
+复制代码
+ 
+
+验证安装：
+
+D:\Python27\Scripts>python
+Python 2.7.3 (default, Apr 10 2012, 23:31:26) [MSC v.1500 32 bit (Intel)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import zope.interface
+>>>
+ 
+
+3) 安装Twisted
+
+官方主页：http://twistedmatrix.com/trac/wiki/TwistedProject
+
+下载地址：http://pypi.python.org/packages/2.7/T/Twisted/Twisted-12.1.0.win32-py2.7.msi
+
+安装过程：略
+
+ 
+
+ 
+
+四、 安装w3lib
+
+官方主页：http://pypi.python.org/pypi/w3lib
+
+下载地址： http://pypi.python.org/packages/source/w/w3lib/w3lib-1.2.tar.gz
+
+解压过程：略
+
+安装过程：
+
+复制代码
+T:\w3lib-1.2>python setup.py install
+running install
+running build
+running build_py
+creating build
+creating build\lib
+creating build\lib\w3lib
+copying w3lib\encoding.py -> build\lib\w3lib
+copying w3lib\form.py -> build\lib\w3lib
+copying w3lib\html.py -> build\lib\w3lib
+copying w3lib\http.py -> build\lib\w3lib
+copying w3lib\url.py -> build\lib\w3lib
+copying w3lib\util.py -> build\lib\w3lib
+copying w3lib\__init__.py -> build\lib\w3lib
+running install_lib
+creating D:\Python27\Lib\site-packages\w3lib
+copying build\lib\w3lib\encoding.py -> D:\Python27\Lib\site-packages\w3lib
+copying build\lib\w3lib\form.py -> D:\Python27\Lib\site-packages\w3lib
+copying build\lib\w3lib\html.py -> D:\Python27\Lib\site-packages\w3lib
+copying build\lib\w3lib\http.py -> D:\Python27\Lib\site-packages\w3lib
+copying build\lib\w3lib\url.py -> D:\Python27\Lib\site-packages\w3lib
+copying build\lib\w3lib\util.py -> D:\Python27\Lib\site-packages\w3lib
+copying build\lib\w3lib\__init__.py -> D:\Python27\Lib\site-packages\w3lib
+byte-compiling D:\Python27\Lib\site-packages\w3lib\encoding.py to encoding.pyc
+byte-compiling D:\Python27\Lib\site-packages\w3lib\form.py to form.pyc
+byte-compiling D:\Python27\Lib\site-packages\w3lib\html.py to html.pyc
+byte-compiling D:\Python27\Lib\site-packages\w3lib\http.py to http.pyc
+byte-compiling D:\Python27\Lib\site-packages\w3lib\url.py to url.pyc
+byte-compiling D:\Python27\Lib\site-packages\w3lib\util.py to util.pyc
+byte-compiling D:\Python27\Lib\site-packages\w3lib\__init__.py to __init__.pyc
+running install_egg_info
+Writing D:\Python27\Lib\site-packages\w3lib-1.2-py2.7.egg-info
+
+T:\w3lib-1.2>
+复制代码
+ 
+
+验证安装：
+
+T:\>python
+Python 2.7.3 (default, Apr 10 2012, 23:31:26) [MSC v.1500 32 bit (Intel)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import w3lib
+>>> 
+ 
+
+ 
+
+五、 安装libxml2
+
+官方主页：http://users.skynet.be/sbi/libxml-python/http://pypi.python.org/pypi/pyOpenSSL
+
+下载地址：http://users.skynet.be/sbi/libxml-python/binaries/libxml2-python-2.7.7.win32-py2.7.exe
+
+安装过程：略
+
+验证安装：
+
+T:\>python
+Python 2.7.3 (default, Apr 10 2012, 23:31:26) [MSC v.1500 32 bit (Intel)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import libxml2
+>>> 
+ 
+
+ 
+
+六、 安装pyOpenSSL
+
+官方主页：http://pypi.python.org/pypi/pyOpenSSL
+
+下载地址：http://pypi.python.org/packages/2.7/p/pyOpenSSL/pyOpenSSL-0.13.winxp32-py2.7.msi
+
+安装过程：略
+
+验证安装：
+
+T:\>python
+Python 2.7.3 (default, Apr 10 2012, 23:31:26) [MSC v.1500 32 bit (Intel)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import OpenSSL
+>>>
+ 
+
+ 
+
+七、 安装Scrapy
+
+官方主页：http://scrapy.org/
+
+下载地址：http://pypi.python.org/packages/source/S/Scrapy/Scrapy-0.14.4.tar.gz
+
+解压过程：略
+
+安装过程：
+
+复制代码
+T:\Scrapy-0.14.4>python setup.py install
+
+……
+Installing easy_install-2.7-script.py script to D:\Python27\Scripts
+Installing easy_install-2.7.exe script to D:\Python27\Scripts
+Installing easy_install-2.7.exe.manifest script to D:\Python27\Scripts
+
+Using d:\python27\lib\site-packages
+Finished processing dependencies for Scrapy==0.14.4
+
+T:\Scrapy-0.14.4>
+复制代码
+ 
+
+验证安装：
+
+复制代码
+T:\>scrapy
+Scrapy 0.14.4 - no active project
+
+Usage:
+  scrapy <command> [options] [args]
+
+Available commands:
+  fetch         Fetch a URL using the Scrapy downloader
+  runspider     Run a self-contained spider (without creating a project)
+  settings      Get settings values
+  shell         Interactive scraping console
+  startproject  Create new project
+  version       Print Scrapy version
+  view          Open URL in browser, as seen by Scrapy
+
+Use "scrapy <command> -h" to see more info about a command
+
+T:\>
+复制代码
