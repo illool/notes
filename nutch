@@ -1,0 +1,55 @@
+windows上Nutch2.3.1导入Eclipse详解
+
+正文：
+环境配置：Eclipse：Mars（4.5.2）
+  JDK1.7 
+  Ivy：2.4.0              http://download.csdn.net/detail/xiaoyaoxiaozi007/9921665
+  Ant:：1.9.9   http://download.csdn.net/detail/xiaoyaoxiaozi007/9923121
+  Nutch：2.3.1          http://nutch.apache.org/downloads.html  
+另附几个其他必须的包：    
+   sonar-ant-task-2.1.jar                   http://download.csdn.net/detail/xiaoyaoxiaozi007/9921775
+   ant-eclipse-1.0.bin.tar.bz2                   http://download.csdn.net/detail/xiaoyaoxiaozi007/9921713
+
+
+Eclipse和JDK相关问题不再赘述。下面的路径都是以我的为例
+一、下载Nutch，存放路径：D:\nutch\apache-nutch-2.3.1
+1.在conf/nutch-site.xml中添加以下内容：
+<property>
+ <name>storage.data.store.class</name>
+ <value>org.apache.gora.hbase.store.HBaseStore</value>
+ <description>Default class for storing data</description>
+</property>
+<!-- HTTP properties ,前两个value值自己随意设置-->
+	<property>
+		<name>http.agent.name</name>
+		<value>j-nutch</value>  
+	</property>
+
+
+	<property>
+		<name>http.robots.agents</name>
+		<value>nothing</value>
+	</property>
+	
+	<property>
+   		<name>plugin.folders</name>
+   		<value>D:/nutch/apache-nutch-2.3.1/build/plugins</value>
+ 	</property>
+2.在ivy/ivy.xml中去掉下列代码的注释：
+<dependency org="org.apache.gora" name="gora-hbase" rev="0.3" conf="*->default" />	     
+3.在conf/gora.properties中添加以下内容：
+gora.datastore.default=org.apache.gora.hbase.store.HBaseStore
+
+4.将sonar-ant-task-2.1.jar放到D:\nutch\apache-nutch-2.3.1\lib中，并在build.xml的taskdef标签中添加以下代码：
+<classpath><fileset dir="lib" includes="sonar*.jar" /></classpath>
+
+二、下载安装Ant并配置环境变量（网上有大量教程，不再赘述）
+三、下载Ivy，将其目录下的jar包复制到Ant安装目录的lib文件夹
+四、命令行窗口切换到Nutch安装目录，运行ant eclipse命令。
+	此处如果报错，就将ant-eclipse-1.0.bin.tar.bz2下载到本地，并把build.xml中的：
+<get src="http://downloads.sourceforge.net/project/ant-eclipse/ant-eclipse/1.0/ant-eclipse-1.0.bin.tar.bz2"
+         dest="${build.dir}/ant-eclipse-1.0.bin.tar.bz2" usetimestamp="false" />
+	替换为：
+<copy file="E:/ant-eclipse-1.0.bin.tar.bz2" 
+				todir="${build.dir}"/>
+	再次运行编译就可以了，编译成功就可以导入Eclipse了。
