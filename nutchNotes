@@ -1,0 +1,5 @@
+http://blog.csdn.net/oneinmore/article/details/45332279
+http://blog.sina.com.cn/s/blog_6f8300990101gtd2.html
+<property>
+            <name>plugin.folders</name>
+<value>./src/plugin</value><!—修改部分-->
