@@ -1,0 +1,282 @@
+1、朴素贝叶斯分类算法原理
+
+1.1、概述
+
+贝叶斯分类算法是一大类分类算法的总称
+
+贝叶斯分类算法以样本可能属于某类的概率来作为分类依据
+
+朴素贝叶斯分类算法是贝叶斯分类算法中最简单的一种
+
+注：朴素的意思是条件概率独立性
+
+P(A|x1x2x3x4)=p(A|x1)*p(A|x2)p(A|x3)p(A|x4)则为条件概率独立
+
+P(xy|z)=p(xyz)/p(z)=p(xz)/p(z)*p(yz)/p(z)
+
+ 
+
+1.2、算法思想
+
+朴素贝叶斯的思想是这样的：
+
+如果一个事物在一些属性条件发生的情况下，事物属于A的概率>属于B的概率，则判定事物属于A
+
+ 
+
+通俗来说比如，你在街上看到一个黑人，我让你猜这哥们哪里来的，你十有八九猜非洲。为什么呢？
+
+在你的脑海中，有这么一个判断流程：
+
+1、这个人的肤色是黑色 <特征>
+
+2、黑色人种是非洲人的概率最高 <条件概率：黑色条件下是非洲人的概率>
+
+3、没有其他辅助信息的情况下，最好的判断就是非洲人
+
+这就是朴素贝叶斯的思想基础。
+
+ 
+
+再扩展一下，假如在街上看到一个黑人讲英语，那我们是怎么去判断他来自于哪里？
+
+提取特征：
+
+肤色： 黑
+
+语言： 英语
+
+ 
+
+黑色人种来自非洲的概率： 80%
+
+黑色人种来自于美国的概率：20%
+
+ 
+
+讲英语的人来自于非洲的概率：10%
+
+讲英语的人来自于美国的概率：90%
+
+ 
+
+在我们的自然思维方式中，就会这样判断：
+
+这个人来自非洲的概率：80% * 10% = 0.08
+
+这个人来自美国的概率：20% * 90% =0.18
+
+我们的判断结果就是：此人来自美国！
+
+ 
+
+其蕴含的数学原理如下：
+
+p(A|xy)=p(Axy)/p(xy)=p(Axy)/p(x)p(y)=p(A)/p(x)*p(A)/p(y)* p(xy)/p(xy)=p(A|x)p(A|y)
+
+ 
+
+P(类别 | 特征)=P(特征 | 类别)*P(类别) / P(特征)
+
+ 
+
+1.3、算法步骤
+
+1、分解各类先验样本数据中的特征
+
+2、计算各类数据中，各特征的条件概率
+
+（比如：特征1出现的情况下，属于A类的概率p(A|特征1)，属于B类的概率p(B|特征1)，属于C类的概率p(C|特征1)......）
+
+3、分解待分类数据中的特征（特征1、特征2、特征3、特征4......）
+
+4、计算各特征的各条件概率的乘积，如下所示：
+
+判断为A类的概率：p(A|特征1)*p(A|特征2)*p(A|特征3)*p(A|特征4).....
+
+判断为B类的概率：p(B|特征1)*p(B|特征2)*p(B|特征3)*p(B|特征4).....
+
+判断为C类的概率：p(C|特征1)*p(C|特征2)*p(C|特征3)*p(C|特征4).....
+
+......
+
+5、结果中的最大值就是该样本所属的类别
+
+ 
+
+1.4、算法应用举例
+
+大众点评、淘宝等电商上都会有大量的用户评论，比如：
+
+1、衣服质量太差了！！！！颜色根本不纯！！！
+
+2、我有一有种上当受骗的感觉！！！！
+
+3、质量太差，衣服拿到手感觉像旧货！！！
+
+4、上身漂亮，合身，很帅，给卖家点赞
+
+5、穿上衣服帅呆了，给点一万个赞
+
+6、我在他家买了三件衣服！！！！质量都很差！
+	
+
+0
+
+0
+
+0
+
+1
+
+1
+
+0
+
+ 
+
+其中1/2/3/6是差评，4/5是好评
+
+现在需要使用朴素贝叶斯分类算法来自动分类其他的评论，比如：
+
+a、这么差的衣服以后再也不买了
+
+b、帅，有逼格
+
+……
+
+ 
+
+1.5、算法应用流程
+
+1、分解出先验数据中的各特征
+
+（即分词，比如“衣服”“质量太差”“差”“不纯”“帅”“漂亮”，“赞”……）
+
+2、计算各类别（好评、差评）中，各特征的条件概率
+
+（比如 p(“衣服”|差评)、p(“衣服”|好评)、p(“差”|好评) 、p(“差”|差评)……）
+
+3、分解出待分类样本的各特征
+
+（比如分解a： “差” “衣服” ……）
+
+4、计算类别概率
+
+P(好评) = p(好评|“差”) *p(好评|“衣服”)*……
+
+P(差评) = p(差评|“差”) *p(差评|“衣服”)*……
+
+5、显然P(差评)的结果值更大，因此a被判别为“差评”
+
+ 
+
+1.6、朴素贝叶斯分类算法案例
+
+ 大体计算方法：
+
+P(好评 | 单词1，单词2，单词3) = P(单词1，单词2，单词3 | 好评) * P(好评) / P(单词1，单词2，单词3)
+
+　　　　因为分母都相同，所以只用比较分子即可--->P(单词1，单词2，单词3 | 好评) P(好评)
+
+　　　　　　　　   每个单词之间都是相互独立的---->P(单词1 | 好评)P(单词2 | 好评)P(单词3 | 好评)*P(好评)
+
+P(单词1 | 好评) = 单词1在样本好评中出现的总次数/样本好评句子中总的单词数
+
+P(好评) = 样本好评的条数/样本的总条数
+
+同理：
+
+P(差评 | 单词1，单词2，单词3) = P(单词1，单词2，单词3 | 差评) * P(差评) / P(单词1，单词2，单词3)
+
+　　　　因为分母都相同，所以只用比较分子即可--->P(单词1，单词2，单词3 | 差评) P(差评)
+
+　　　　　　　　   每个单词之间都是相互独立的---->P(单词1 | 差评)P(单词2 | 差评)P(单词3 | 差评)*P(差评)
+复制代码
+
+ 1 #!/usr/bin/python
+ 2 # coding=utf-8
+ 3 from numpy import *
+ 4 
+ 5 # 过滤网站的恶意留言  侮辱性：1     非侮辱性：0
+ 6 # 创建一个实验样本
+ 7 def loadDataSet():
+ 8     postingList = [['my','dog','has','flea','problems','help','please'],
+ 9                    ['maybe','not','take','him','to','dog','park','stupid'],
+10                    ['my','dalmation','is','so','cute','I','love','him'],
+11                    ['stop','posting','stupid','worthless','garbage'],
+12                    ['mr','licks','ate','my','steak','how','to','stop','him'],
+13                    ['quit','buying','worthless','dog','food','stupid']]
+14     classVec = [0,1,0,1,0,1]
+15     return postingList, classVec
+16 
+17 # 创建一个包含在所有文档中出现的不重复词的列表
+18 def createVocabList(dataSet):
+19     vocabSet = set([])      # 创建一个空集
+20     for document in dataSet:
+21         vocabSet = vocabSet | set(document)   # 创建两个集合的并集
+22     return list(vocabSet)
+23 
+24 # 将文档词条转换成词向量
+25 def setOfWords2Vec(vocabList, inputSet):
+26     returnVec = [0]*len(vocabList)        # 创建一个其中所含元素都为0的向量
+27     for word in inputSet:
+28         if word in vocabList:
+29             # returnVec[vocabList.index(word)] = 1     # index函数在字符串里找到字符第一次出现的位置  词集模型
+30             returnVec[vocabList.index(word)] += 1      # 文档的词袋模型    每个单词可以出现多次
+31         else: print "the word: %s is not in my Vocabulary!" % word
+32     return returnVec
+33 
+34 # 朴素贝叶斯分类器训练函数   从词向量计算概率
+35 def trainNB0(trainMatrix, trainCategory):
+36     numTrainDocs = len(trainMatrix)
+37     numWords = len(trainMatrix[0])
+38     pAbusive = sum(trainCategory)/float(numTrainDocs)
+39     # p0Num = zeros(numWords); p1Num = zeros(numWords)
+40     # p0Denom = 0.0; p1Denom = 0.0
+41     p0Num = ones(numWords);   # 避免一个概率值为0,最后的乘积也为0
+42     p1Num = ones(numWords);   # 用来统计两类数据中，各词的词频
+43     p0Denom = 2.0;  # 用于统计0类中的总数
+44     p1Denom = 2.0  # 用于统计1类中的总数
+45     for i in range(numTrainDocs):
+46         if trainCategory[i] == 1:
+47             p1Num += trainMatrix[i]
+48             p1Denom += sum(trainMatrix[i])
+49         else:
+50             p0Num += trainMatrix[i]
+51             p0Denom += sum(trainMatrix[i])
+52             # p1Vect = p1Num / p1Denom
+53             # p0Vect = p0Num / p0Denom
+54     p1Vect = log(p1Num / p1Denom)    # 在类1中，每个次的发生概率
+55     p0Vect = log(p0Num / p0Denom)      # 避免下溢出或者浮点数舍入导致的错误   下溢出是由太多很小的数相乘得到的
+56     return p0Vect, p1Vect, pAbusive
+57 
+58 # 朴素贝叶斯分类器
+59 def classifyNB(vec2Classify, p0Vec, p1Vec, pClass1):
+60     p1 = sum(vec2Classify*p1Vec) + log(pClass1)
+61     p0 = sum(vec2Classify*p0Vec) + log(1.0-pClass1)
+62     if p1 > p0:
+63         return 1
+64     else:
+65         return 0
+66 
+67 def testingNB():
+68     listOPosts, listClasses = loadDataSet()
+69     myVocabList = createVocabList(listOPosts)
+70     trainMat = []
+71     for postinDoc in listOPosts:
+72         trainMat.append(setOfWords2Vec(myVocabList, postinDoc))
+73     p0V, p1V, pAb = trainNB0(array(trainMat), array(listClasses))
+74     testEntry = ['love','my','dalmation']
+75     thisDoc = array(setOfWords2Vec(myVocabList, testEntry))
+76     print testEntry, 'classified as: ', classifyNB(thisDoc, p0V, p1V, pAb)
+77     testEntry = ['stupid','garbage']
+78     thisDoc = array(setOfWords2Vec(myVocabList, testEntry))
+79     print testEntry, 'classified as: ', classifyNB(thisDoc, p0V, p1V, pAb)
+80 
+81 # 调用测试方法----------------------------------------------------------------------
+82 testingNB()
+
+ 
+
+ 运行结果：
