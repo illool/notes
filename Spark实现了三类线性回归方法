@@ -1,3 +1,38 @@
 1、LinearRegression：普通线性回归模型
 2、LassoRegression：加L1正则化的线性回归
 3、RidgeRegression：加L2正则化的线性回归
+
+分类 Classification
+-----------逻辑回归 Logistic regression
+-------------------二项式逻辑回归 Binomial logistic regression
+-------------------多项Logistic回归 Multinomial logistic regression
+-----------决策树分类器 Decision tree classifier
+-----------随机森林分类器 Random forest classifier
+-----------梯度增强树分类器 Gradient-boosted tree classifier
+-----------多层感知器分类器 Multilayer perceptron classifier
+---------一对一休息分类器（a.k.a.一对全）One-vs-Rest classifier (a.k.a. One-vs-All)
+-----------朴素贝叶斯 Naive Bayes
+回归 Regression
+-----------线性回归 Linear regression
+----------广义线性回归 Generalized linear regression
+-----------------可用的家庭 Available families
+-----------决策树回归 Decision tree regression
+------------随机森林回归 Random forest regression
+-----------梯度增强树回归 Gradient-boosted tree regression
+-----------生存回归 Survival regression
+-----------等渗回归 Isotonic regression
+----------------例子 Examples
+线性方法 Linear methods
+决策树 Decision trees
+------------输入和输出 Inputs and Outputs
+------------输入列 Input Columns
+------------输出列 Output Columns
+树套 Tree Ensembles
+随机森林 Random Forests
+-------------输入和输出 Inputs and Outputs
+-------------输入列 Input Columns
+-------------输出列（预测）Output Columns (Predictions)
+梯度增强树（GBT）Gradient-Boosted Trees (GBTs)
+--------------输入和输出 Inputs and Outputs
+-------------输入列 Input Columns
+-------------输出列（预测）Output Columns (Predictions)
