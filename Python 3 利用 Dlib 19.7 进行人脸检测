@@ -29,28 +29,27 @@ while(cap.isOpened()):
         print("人脸数：", len(dets))
         if len(dets) <= 0:
             continue
-        shape2 = predictor(frame, dets[0])
-        win.add_overlay(shape2)
+        for i in range(len(dets)):
+            #shape2 = predictor(frame, dets[0])
+            #win.add_overlay(shape2)
         
-        for k, d in enumerate(dets):
-            print("第", k, "个人脸d的坐标：",
-                  "left:", d.left(),
-                  "right:", d.right(),
-                  "top:", d.top(),
-                  "bottom:", d.bottom())
-
-            # 利用预测器预测
-            shape = predictor(frame, d)
-
-            # 绘制面部轮廓
-#            win.add_overlay(shape)
-
-            # 绘制矩阵轮廓
-            win.add_overlay(dets)
-            
-            # 保持图像
-            #dlib.hit_enter_to_continue()
-            time.sleep(1)   
+            for k, d in enumerate(dets):
+                print("第", k, "个人脸d的坐标：",
+                      "left:", d.left(),
+                      "right:", d.right(),
+                      "top:", d.top(),
+                      "bottom:", d.bottom())
+    
+                # 利用预测器预测
+                shape = predictor(frame, d)
+    
+                # 绘制面部轮廓
+                win.add_overlay(shape)
+                # 绘制矩阵轮廓
+                win.add_overlay(dets)
+                # 保持图像
+                #dlib.hit_enter_to_continue()
+                time.sleep(1)   
         if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
     else:
