@@ -1,0 +1,63 @@
+#include <dlib/gui_widgets.h>
+#include <dlib/image_io.h>
+#include <dlib/image_transforms.h>
+
+
+using namespace std;
+using namespace dlib;
+
+//  ----------------------------------------------------------------------------
+
+int main()
+{
+	try
+	{	
+		array2d<rgb_pixel> img;
+		//只能是BMP，如果想要JPG之类的，需要编译Dlib让其支持…
+		load_image(img,"C:\\Users\\zhumingde\\Pictures\\timg.bmp");
+		//400*362
+			
+		//单个hog特征是31维的…
+		array2d<matrix<float, 31, 1> > hog;
+		
+		extract_fhog_features(img, hog,16);//默认为8
+		//左右上下留白么233
+		//如果不整除，进1…
+		//也就是说如果cell为100,,,最终的hog为2*2
+		//提取出的hog特征维度为  (cols/cell-2)*(rows/cell-2)
+
+		cout << "hog image has " << hog.nr() << " rows and " << hog.nc() << " columns." << endl;
+
+		//看看Hog特征
+		image_window win(img);
+		image_window winhog(draw_fhog(hog));
+
+		
+		//点击原图可以找出对应的hog特征
+		// Another thing you might want to do is map between the pixels in img and the
+		// cells in the hog image.  dlib provides the image_to_fhog() and fhog_to_image()
+		// routines for this.  Their use is demonstrated in the following loop which
+		// responds to the user clicking on pixels in the image img.
+		point p;  // A 2D point, used to represent pixel locations.
+		while (win.get_next_double_click(p))
+		{
+			point hp = image_to_fhog(p);
+			cout << "The point " << p << " in the input image corresponds to " << hp << " in hog space." << endl;
+			cout << "FHOG features at this point: " << trans(hog[hp.y()][hp.x()]) << endl;
+		}
+
+		//另一种格式…
+		dlib::array<array2d<float> > planar_hog;
+		extract_fhog_features(img, planar_hog);
+
+		system("pause");
+	}
+	catch (exception& e)
+	{
+		cout << "exception thrown: " << e.what() << endl;
+		system("pause");
+	}
+}
+
+//  ----------------------------------------------------------------------------
+
