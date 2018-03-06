@@ -1,0 +1,556 @@
+https://www.cnblogs.com/xiaoma0529/p/6952769.html
+
+数据预处理与特征工程
+缺失值处理
+
+缺失值处理通常有如下的方法：
+
+    对于unknown值数量较少的变量，包括job和marital，删除这些变量是缺失值(unknown)的行；
+    如果预计该变量对于学习模型效果影响不大，可以对unknown值赋众数，这里认为变量都对学习模型有较大影响，不采取此法；
+    可以使用数据完整的行作为训练集，以此来预测缺失值，变量housing，loan，education和default的缺失值采取此法。由于sklearn的模型只能处理数值变量，需要先将分类变量数值化，然后进行预测。本次实验使用随机森林预测缺失值
+
+def fill_unknown(data, bin_attrs, cate_attrs, numeric_attrs):
+    # fill_attrs = ['education', 'default', 'housing', 'loan']
+    fill_attrs = []
+    for i in bin_attrs+cate_attrs:
+        if data[data[i] == 'unknown']['y'].count() < 500:
+            # delete col containing unknown
+            data = data[data[i] != 'unknown']
+        else:
+            fill_attrs.append(i)
+     
+    data = encode_cate_attrs(data, cate_attrs)
+    data = encode_bin_attrs(data, bin_attrs)
+    data = trans_num_attrs(data, numeric_attrs)
+    data['y'] = data['y'].map({'no': 0, 'yes': 1}).astype(int)
+    for i in fill_attrs:    
+        test_data = data[data[i] == 'unknown']
+        testX = test_data.drop(fill_attrs, axis=1)
+        train_data = data[data[i] != 'unknown']       
+        trainY = train_data[i]
+        trainX = train_data.drop(fill_attrs, axis=1)   
+        test_data[i] = train_predict_unknown(trainX, trainY, testX)
+        data = pd.concat([train_data, test_data])
+     
+    return data
+Feature Extractors（特征提取）
+TF-IDF
+
+TF（词频Term Frequency）：HashingTF与CountVectorizer都可以用于生成词频TF矢量。
+
+ 
+
+HashingTF是一个转换器（Transformer），它可以将特征词组转换成给定长度的（词频）特征向量组。在文本处理中，“特征词组”有一系列的特征词构成。HashingTF利用hashing trick将原始的特征（raw feature）通过哈希函数映射到低维向量的索引（index）中。这里使用的哈希函数是murmurHash 3。词频（TF）是通过映射后的低维向量计算获得。通过这种方法避免了直接计算（通过特征词建立向量term-to-index产生的）巨大特征数量。（直接计算term-to-index 向量）对一个比较大的语料库的计算来说开销是非常巨大的。但这种降维方法也可能存在哈希冲突：不同的原始特征通过哈希函数后得到相同的值（ f(x1) = f(x2) ）。为了降低出现哈希冲突的概率，我们可以增大哈希值的特征维度，例如：增加哈希表中的bucket的数量。一个简单的例子：通过哈希函数变换到列的索引，这种方法适用于2的幂（函数）作为特征维度，否则（采用其他的映射方法）就会出现特征不能均匀地映射到哈希值上。默认的特征维度是 218=262,144218=262,144 。一个可选的二进制切换参数控制词频计数。当设置为true时，所有非零词频设置为1。这对离散的二进制概率模型计算非常有用。
+
+CountVectorizer可以将文本文档转换成关键词的向量集。请阅读英文原文CountVectorizer 了解更多详情。
+
+IDF（逆文档频率）：IDF是的权重评估器（Estimator），用于对数据集产生相应的IDFModel（不同的词频对应不同的权重）。 IDFModel对特征向量集（一般由HashingTF或CountVectorizer产生）做取对数（log）处理。直观地看，特征词出现的文档越多，权重越低（down-weights colume）。
+
+spark代码
+
+package ml
+ 
+import java.util
+ 
+import org.apache.spark.ml.feature.HashingTF
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.types.{DataTypes, StructField}
+import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.ml.feature.{HashingTF, IDF, Tokenizer}
+/**
+  * Created by Administrator on 2017/6/6.
+  */
+object TFIDF {
+    def main(args: Array[String]) {
+        val conf = new SparkConf().setAppName("test").setMaster("local")
+        val sc = new SparkContext(conf)
+        val sql = new SQLContext(sc);
+ 
+        val fields = new util.ArrayList[StructField];
+        fields.add(DataTypes.createStructField("label", DataTypes.DoubleType, true));
+        fields.add(DataTypes.createStructField("sentence", DataTypes.StringType, true));
+        val data = sc.parallelize(Seq(
+            (0.0, "Hi I heard about Spark"),
+            (0.0, "I wish Java could use case classes"),
+            (1.0, "Logistic regression models are neat")
+        ))
+        val structType = DataTypes.createStructType(fields);
+ 
+        val row = data.map {
+            row => Row(row._1, row._2)
+        }
+        val df: DataFrame = sql.createDataFrame(row, structType)
+        df.printSchema()
+        df.show()
+        val tokenizer = new Tokenizer().setInputCol("sentence").setOutputCol("words")
+        val wordsData = tokenizer.transform(df)
+ 
+        val hashingTF = new HashingTF()
+                .setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(20)
+ 
+        val featurizedData = hashingTF.transform(wordsData)
+        // alternatively, CountVectorizer can also be used to get term frequency vectors
+ 
+        val idf = new IDF().setInputCol("rawFeatures").setOutputCol("features")
+        val idfModel = idf.fit(featurizedData)
+ 
+        val rescaledData = idfModel.transform(featurizedData)
+        rescaledData.select("label", "features").show(false)
+    }
+ 
+}
+
+　　
+
+ 
+Word2Vec
+
+Word2Vec是一个通过词向量来表示文档语义上相似度的Estimator(模型评估器)，它会训练出Word2VecModel模型。该模型将（文本的）每个单词映射到一个单独的大小固定的词向量（该文本对应的）上。Word2VecModel通过文本单词的平均数（条件概率）将每个文档转换为词向量; 此向量可以用作特征预测、 文档相似度计算等。请阅读英文原文Word2Vec MLlib 用户指南了解更多的细节。
+
+在下面的代码段中，我们以一组文档为例，每一组都由一系列的词（序列）构成。通过Word2Vec把每个文档变成一个特征词向量。这个特征矢量就可以（当做输入参数）传递给机器学习算法。
+	
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.ml.feature.Word2Vec
+import org.apache.spark.ml.linalg.Vector
+import org.apache.spark.sql.Row
+/**
+  * Created by Administrator on 2017/5/24.
+  */
+object Word2Vec {
+    def main(args: Array[String]) {
+ 
+ 
+        // Input data: Each row is a bag of words from a sentence or document.
+        val spark = SparkSession
+                .builder()
+                .appName("Spark SQL basic example").master("local")
+                .config("spark.some.config.option", "some-value")
+                .getOrCreate()
+        val documentDF = spark.createDataFrame(Seq(
+            "Hi I heard about Spark".split(" "),
+            "I wish Java could use case classes".split(" "),
+            "Logistic regression models are neat".split(" ")
+        ).map(Tuple1.apply)).toDF("text")
+ 
+        // Learn a mapping from words to Vectors.
+        val word2Vec = new Word2Vec()
+                .setInputCol("text")
+                .setOutputCol("result")
+                .setVectorSize(3)
+                .setMinCount(0)
+        val model = word2Vec.fit(documentDF)
+ 
+        val result = model.transform(documentDF)
+        result.collect().foreach { case Row(text: Seq[_], features: Vector) =>
+            println(s"Text: [${text.mkString(", ")}] => \nVector: $features\n") }
+    }
+ 
+}
+
+　　
+Word2Vec
+
+Word2Vec是一个通过词向量来表示文档语义上相似度的Estimator(模型评估器)，它会训练出Word2VecModel模型。该模型将（文本的）每个单词映射到一个单独的大小固定的词向量（该文本对应的）上。Word2VecModel通过文本单词的平均数（条件概率）将每个文档转换为词向量; 此向量可以用作特征预测、 文档相似度计算等。请阅读英文原文Word2Vec MLlib 用户指南了解更多的细节。
+
+在下面的代码段中，我们以一组文档为例，每一组都由一系列的词（序列）构成。通过Word2Vec把每个文档变成一个特征词向量。这个特征矢量就可以（当做输入参数）传递给机器学习算法。
+
+package ml
+ 
+import java.util
+ 
+import org.apache.spark.ml.feature.Word2Vec
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.types.{DataTypes, StructField}
+import org.apache.spark.{SparkContext, SparkConf}
+ 
+/**
+  * Created by Administrator on 2017/6/6.
+  */
+object Word2Vec1 {
+    def main(args: Array[String]) {
+        val conf = new SparkConf().setAppName("test").setMaster("local")
+        val sc = new SparkContext(conf)
+        val sql = new SQLContext(sc);
+ 
+        val documentDF = sql.createDataFrame(Seq(
+            "Hi I heard about Spark".split(" "),
+            "I wish Java could use case classes".split(" "),
+            "Logistic regression models are neat".split(" ")
+        ).map(Tuple1.apply)).toDF("text")
+ 
+        documentDF.printSchema()
+        val word2Vec = new Word2Vec()
+                .setInputCol("text")
+                .setOutputCol("result")
+                .setVectorSize(3)
+                .setMinCount(0)
+        val model = word2Vec.fit(documentDF)
+ 
+        val result: DataFrame = model.transform(documentDF)
+        result.printSchema()
+        result.show(false)
+        /*        result.collect().foreach { case Row(text: Seq[ _ ], features: Vector) =>
+/*            println(s"Text: [${text.mkString(", ")}] => \nVector: $features\n") }*/
+ 
+ 
+    }*/
+    }
+}
+
+　　
+CountVectorizer
+
+CountVectorizer和CountVectorizerModel旨在通过计数将文本文档转换为特征向量。当不存在先验字典时，CountVectorizer可以作为Estimator提取词汇，并生成CountVectorizerModel。该模型产生关于该文档词汇的稀疏表示（稀疏特征向量），这个表示（特征向量）可以传递给其他像 LDA 算法。
+
+在拟合fitting过程中， CountVectorizer将根据语料库中的词频排序选出前vocabSize个词。其中一个配置参数minDF通过指定词汇表中的词语在文档中出现的最小次数 (或词频 if < 1.0) ，影响拟合（fitting）的过程。另一个可配置的二进制toggle参数控制输出向量。如果设置为 true 那么所有非零计数设置为 1。这对于二元型离散概率模型非常有用。
+
+文本中每行都是一个文本类型的数组（字符串）。调用CountVectorizer产生词汇表（a, b, c）的CountVectorizerModel模型，转后后的输出向量如下：
+
+import org.apache.spark.ml.feature.{CountVectorizer, CountVectorizerModel}
+ 
+val df = spark.createDataFrame(Seq(
+  (0, Array("a", "b", "c")),
+  (1, Array("a", "b", "b", "c", "a"))
+)).toDF("id", "words")
+ 
+// fit a CountVectorizerModel from the corpus
+val cvModel: CountVectorizerModel = new CountVectorizer()
+  .setInputCol("words")
+  .setOutputCol("features")
+  .setVocabSize(3)
+  .setMinDF(2)
+  .fit(df)
+ 
+// alternatively, define CountVectorizerModel with a-priori vocabulary
+val cvm = new CountVectorizerModel(Array("a", "b", "c"))
+  .setInputCol("words")
+  .setOutputCol("features")
+ 
+cvModel.transform(df).show(false)
+
+　　
+Feature Transformers（特征变换）
+Tokenizer（分词器）
+
+Tokenization（文本符号化）是将文本 （如一个句子）拆分成单词的过程。（在Spark ML中）Tokenizer（分词器）提供此功能。下面的示例演示如何将句子拆分为词的序列。
+
+RegexTokenizer提供了（更高级的）基于正则表达式 (regex) 匹配的（对句子或文本的）单词拆分。默认情况下，参数"pattern"(默认的正则表达式: "\\s+") 作为分隔符用于拆分输入的文本。或者，用户可以将参数“gaps”设置为 false ，指定正则表达式"pattern"表示"tokens"，而不是分隔符，这样作为分词结果找到的所有匹配项。
+
+import org.apache.spark.ml.feature.{RegexTokenizer, Tokenizer}
+import org.apache.spark.sql.functions._
+ 
+val sentenceDataFrame = spark.createDataFrame(Seq(
+  (0, "Hi I heard about Spark"),
+  (1, "I wish Java could use case classes"),
+  (2, "Logistic,regression,models,are,neat")
+)).toDF("id", "sentence")
+ 
+val tokenizer = new Tokenizer().setInputCol("sentence").setOutputCol("words")
+val regexTokenizer = new RegexTokenizer()
+  .setInputCol("sentence")
+  .setOutputCol("words")
+  .setPattern("\\W") // alternatively .setPattern("\\w+").setGaps(false)
+ 
+val countTokens = udf { (words: Seq[String]) => words.length }
+ 
+val tokenized = tokenizer.transform(sentenceDataFrame)
+tokenized.select("sentence", "words")
+    .withColumn("tokens", countTokens(col("words"))).show(false)
+ 
+val regexTokenized = regexTokenizer.transform(sentenceDataFrame)
+regexTokenized.select("sentence", "words")
+    .withColumn("tokens", countTokens(col("words"))).show(false)
+
+　　
+StopWordsRemover（停用字清除）
+
+Stop words （停用字）是（在文档中）频繁出现，但未携带太多意义的词语，它们不应该参与算法运算。
+
+ StopWordsRemover（的作用是）将输入的字符串 （如分词器Tokenizer的输出）中的停用字删除（后输出）。停用字表由stopWords参数指定。对于某些语言的默认停止词是通过调用StopWordsRemover.loadDefaultStopWords(language)设置的，可用的选项为"丹麦"，"荷兰语"、"英语"、"芬兰语"，"法国"，"德国"、"匈牙利"、"意大利"、"挪威"、"葡萄牙"、"俄罗斯"、"西班牙"、"瑞典"和"土耳其"。布尔型参数caseSensitive指示是否区分大小写 （默认为否）。
+
+import org.apache.spark.ml.feature.StopWordsRemover
+ 
+val remover = new StopWordsRemover()
+  .setInputCol("raw")
+  .setOutputCol("filtered")
+ 
+val dataSet = spark.createDataFrame(Seq(
+  (0, Seq("I", "saw", "the", "red", "balloon")),
+  (1, Seq("Mary", "had", "a", "little", "lamb"))
+)).toDF("id", "raw")
+ 
+remover.transform(dataSet).show(false)
+
+　　
+n-gram
+
+一个 n-gram是一个长度为n（整数）的字的序列。NGram可以用来将输入特征转换成n-grams。
+
+NGram 的输入为一系列的字符串（例如：Tokenizer分词器的输出）。参数n表示每个n-gram中单词（terms）的数量。NGram的输出结果是多个n-grams构成的序列，其中，每个n-gram表示被空格分割出来的n个连续的单词。如果输入的字符串少于n个单词，NGram输出为空。
+	
+import org.apache.spark.ml.feature.NGram
+ 
+val wordDataFrame = spark.createDataFrame(Seq(
+  (0, Array("Hi", "I", "heard", "about", "Spark")),
+  (1, Array("I", "wish", "Java", "could", "use", "case", "classes")),
+  (2, Array("Logistic", "regression", "models", "are", "neat"))
+)).toDF("id", "words")
+ 
+val ngram = new NGram().setN(2).setInputCol("words").setOutputCol("ngrams")
+ 
+val ngramDataFrame = ngram.transform(wordDataFrame)
+ngramDataFrame.select("ngrams").show(false)
+
+　　
+Binarizer(二元化方法)
+
+二元化（Binarization）是通过（选定的）阈值将数值化的特征转换成二进制（0/1）特征表示的过程。
+
+Binarizer（ML提供的二元化方法）二元化涉及的参数有inputCol（输入）、outputCol（输出）以及threshold（阀值）。（输入的）特征值大于阀值将映射为1.0，特征值小于等于阀值将映射为0.0。（Binarizer）支持向量（Vector）和双精度（Double）类型的输出
+	
+import org.apache.spark.ml.feature.Binarizer
+ 
+val data = Array((0, 0.1), (1, 0.8), (2, 0.2))
+val dataFrame = spark.createDataFrame(data).toDF("id", "feature")
+ 
+val binarizer: Binarizer = new Binarizer()
+  .setInputCol("feature")
+  .setOutputCol("binarized_feature")
+  .setThreshold(0.5)
+ 
+val binarizedDataFrame = binarizer.transform(dataFrame)
+ 
+println(s"Binarizer output with Threshold = ${binarizer.getThreshold}")
+binarizedDataFrame.show()
+
+　　
+PCA（主成成分分析）
+
+主成分分析是一种统计学方法，它使用正交转换从一系列可能线性相关的变量中提取线性无关变量集，提取出的变量集中的元素称为主成分（principal components）。（ML中）PCA 类通过PCA
+方法对项目向量进行降维。下面的示例介绍如何将5维特征向量转换为3维主成分向量。
+	
+import org.apache.spark.ml.feature.PCA
+import org.apache.spark.ml.linalg.Vectors
+ 
+val data = Array(
+  Vectors.sparse(5, Seq((1, 1.0), (3, 7.0))),
+  Vectors.dense(2.0, 0.0, 3.0, 4.0, 5.0),
+  Vectors.dense(4.0, 0.0, 0.0, 6.0, 7.0)
+)
+val df = spark.createDataFrame(data.map(Tuple1.apply)).toDF("features")
+ 
+val pca = new PCA()
+  .setInputCol("features")
+  .setOutputCol("pcaFeatures")
+  .setK(3)
+  .fit(df)
+ 
+val result = pca.transform(df).select("pcaFeatures")
+result.show(false)
+
+　　
+PolynomialExpansion（多项式扩展）
+
+多项式扩展（Polynomial expansion）是将n维的原始特征组合扩展到多项式空间的过程。（ML中） PolynomialExpansion 提供多项式扩展的功能。下面的示例会介绍如何将你的特征集拓展到3维多项式空间。
+	
+import org.apache.spark.ml.feature.PolynomialExpansion
+import org.apache.spark.ml.linalg.Vectors
+ 
+val data = Array(
+  Vectors.dense(2.0, 1.0),
+  Vectors.dense(0.0, 0.0),
+  Vectors.dense(3.0, -1.0)
+)
+val df = spark.createDataFrame(data.map(Tuple1.apply)).toDF("features")
+ 
+val polyExpansion = new PolynomialExpansion()
+  .setInputCol("features")
+  .setOutputCol("polyFeatures")
+  .setDegree(3)
+ 
+val polyDF = polyExpansion.transform(df)
+polyDF.show(false)
+
+　　
+Discrete Cosine Transform (DCT-离散余弦变换)
+
+The Discrete Cosine Transform transforms a length N   N real-valued sequence in the time domain into another length N   N real-valued sequence in the frequency domain. A DCT class provides this functionality, implementing the DCT-II and scaling the result by  12√12 such that the representing matrix for the transform is unitary. No shift is applied to the transformed sequence (e.g. the 0  0th element of the transformed sequence is the 0  0th DCT coefficient and not the N /2  N/2th).
+
+离散余弦变换（Discrete Cosine Transform） 是将时域的N维实数序列转换成频域的N维实数序列的过程（有点类似离散傅里叶变换）。（ML中的）DCT类提供了离散余弦变换DCT-II的功能，将离散余弦变换后结果乘以 12√12 得到一个与时域矩阵长度一致的矩阵。输入序列与输出之间是一一对应的。
+	
+import org.apache.spark.ml.feature.DCT
+import org.apache.spark.ml.linalg.Vectors
+ 
+val data = Seq(
+  Vectors.dense(0.0, 1.0, -2.0, 3.0),
+  Vectors.dense(-1.0, 2.0, 4.0, -7.0),
+  Vectors.dense(14.0, -2.0, -5.0, 1.0))
+ 
+val df = spark.createDataFrame(data.map(Tuple1.apply)).toDF("features")
+ 
+val dct = new DCT()
+  .setInputCol("features")
+  .setOutputCol("featuresDCT")
+  .setInverse(false)
+ 
+val dctDf = dct.transform(df)
+dctDf.select("featuresDCT").show(false)
+
+　　
+StringIndexer（字符串-索引变换）
+
+StringIndexer（字符串-索引变换）将字符串的（以单词为）标签编码成标签索引（表示）。标签索引序列的取值范围是[0，numLabels（字符串中所有出现的单词去掉重复的词后的总和）]，按照标签出现频率排序，出现最多的标签索引为0。如果输入是数值型，我们先将数值映射到字符串，再对字符串进行索引化。如果下游的pipeline（例如：Estimator或者Transformer）需要用到索引化后的标签序列，则需要将这个pipeline的输入列名字指定为索引化序列的名字。大部分情况下，通过setInputCol设置输入的列名。
+	
+import org.apache.spark.ml.feature.StringIndexer
+ 
+val df = spark.createDataFrame(
+  Seq((0, "a"), (1, "b"), (2, "c"), (3, "a"), (4, "a"), (5, "c"))
+).toDF("id", "category")
+ 
+val indexer = new StringIndexer()
+  .setInputCol("category")
+  .setOutputCol("categoryIndex")
+ 
+val indexed = indexer.fit(df).transform(df)
+indexed.show()
+
+　　
+IndexToString（索引-字符串变换）
+
+ 与StringIndexer对应，IndexToString将索引化标签还原成原始字符串。一个常用的场景是先通过StringIndexer产生索引化标签，然后使用索引化标签进行训练，最后再对预测结果使用IndexToString来获取其原始的标签字符串。
+	
+import org.apache.spark.ml.attribute.Attribute
+import org.apache.spark.ml.feature.{IndexToString, StringIndexer}
+ 
+val df = spark.createDataFrame(Seq(
+  (0, "a"),
+  (1, "b"),
+  (2, "c"),
+  (3, "a"),
+  (4, "a"),
+  (5, "c")
+)).toDF("id", "category")
+ 
+val indexer = new StringIndexer()
+  .setInputCol("category")
+  .setOutputCol("categoryIndex")
+  .fit(df)
+val indexed = indexer.transform(df)
+ 
+println(s"Transformed string column '${indexer.getInputCol}' " +
+    s"to indexed column '${indexer.getOutputCol}'")
+indexed.show()
+ 
+val inputColSchema = indexed.schema(indexer.getOutputCol)
+println(s"StringIndexer will store labels in output column metadata: " +
+    s"${Attribute.fromStructField(inputColSchema).toString}\n")
+ 
+val converter = new IndexToString()
+  .setInputCol("categoryIndex")
+  .setOutputCol("originalCategory")
+ 
+val converted = converter.transform(indexed)
+ 
+println(s"Transformed indexed column '${converter.getInputCol}' back to original string " +
+    s"column '${converter.getOutputCol}' using labels in metadata")
+converted.select("id", "categoryIndex", "originalCategory").show()
+
+　　
+OneHotEncoder（独热编码）
+
+独热编码（One-hot encoding）将类别特征映射为二进制向量，其中只有一个有效值（为1，其余为0）。这样在诸如Logistic回归这样需要连续数值值作为特征输入的分类器中也可以使用类别（离散）特征
+	
+import org.apache.spark.ml.feature.{OneHotEncoder, StringIndexer}
+ 
+val df = spark.createDataFrame(Seq(
+  (0, "a"),
+  (1, "b"),
+  (2, "c"),
+  (3, "a"),
+  (4, "a"),
+  (5, "c")
+)).toDF("id", "category")
+ 
+val indexer = new StringIndexer()
+  .setInputCol("category")
+  .setOutputCol("categoryIndex")
+  .fit(df)
+val indexed = indexer.transform(df)
+ 
+val encoder = new OneHotEncoder()
+  .setInputCol("categoryIndex")
+  .setOutputCol("categoryVec")
+ 
+val encoded = encoder.transform(indexed)
+encoded.show()
+
+　　
+VectorIndexer(向量类型索引化)
+
+VectorIndexer是对数据集特征向量中的类别特征（index categorical features categorical features ，eg：枚举类型）进行编号索引。它能够自动判断那些特征是可以重新编号的类别型，并对他们进行重新编号索引，具体做法如下：
+
+1.获得一个向量类型的输入以及maxCategories参数。
+
+2.基于原始向量数值识别哪些特征需要被类别化：特征向量中某一个特征不重复取值个数小于等于maxCategories则认为是可以重新编号索引的。某一个特征不重复取值个数大于maxCategories，则该特征视为连续值，不会重新编号（不会发生任何改变）
+
+3.对于每一个可编号索引的类别特征重新编号为0～K（K<=maxCategories-1）。
+
+4.对类别特征原始值用编号后的索引替换掉。
+
+索引后的类别特征可以帮助决策树等算法处理类别型特征，提高性能。
+
+在下面的例子中，我们读入一个数据集，然后使用VectorIndexer来决定哪些类别特征需要被作为索引类型处理，将类型特征转换为他们的索引。转换后的数据可以传递给DecisionTreeRegressor之类的算法出来类型特征。
+
+简单理解一下：以C为例，假如一个星期的枚举型的类型enum weekday{ sun = 4,mou =5, tue =6, wed = 7, thu =8, fri = 9, sat =10 };如果需要进行这个特征带入运算，可以将这些枚举数值重新编号为 { sun = 0 , mou =1, tue =2, wed = 3, thu =4, fri = 5, sat =6 }，通常是出现次数越多的枚举，编号越小（从0开始）
+	
+import org.apache.spark.ml.feature.VectorIndexer
+ 
+val data = spark.read.format("libsvm").load("data/mllib/sample_libsvm_data.txt")
+ 
+val indexer = new VectorIndexer()
+  .setInputCol("features")
+  .setOutputCol("indexed")
+  .setMaxCategories(10)
+ 
+val indexerModel = indexer.fit(data)
+ 
+val categoricalFeatures: Set[Int] = indexerModel.categoryMaps.keys.toSet
+println(s"Chose ${categoricalFeatures.size} categorical features: " +
+  categoricalFeatures.mkString(", "))
+ 
+// Create new column "indexed" with categorical values transformed to indices
+val indexedData = indexerModel.transform(data)
+indexedData.show()
+
+　　
+Normalizer(范数p-norm规范化)
+
+Normalizer是一个转换器，它可以将一组特征向量（通过计算p-范数）规范化。参数为p（默认值：2）来指定规范化中使用的p-norm。规范化操作可以使输入数据标准化，对后期机器学习算法的结果也有更好的表现。
+
+下面的例子展示如何读入一个libsvm格式的数据，然后将每一行转换为 L2以及 L∞ 形式。
+	
+import org.apache.spark.ml.feature.Normalizer
+import org.apache.spark.ml.linalg.Vectors
+ 
+val dataFrame = spark.createDataFrame(Seq(
+  (0, Vectors.dense(1.0, 0.5, -1.0)),
+  (1, Vectors.dense(2.0, 1.0, 1.0)),
+  (2, Vectors.dense(4.0, 10.0, 2.0))
+)).toDF("id", "features")
+ 
+// Normalize each Vector using $L^1$ norm.
+val normalizer = new Normalizer()
+  .setInputCol("features")
+  .setOutputCol("normFeatures")
+  .setP(1.0)
+ 
+val l1NormData = normalizer.transform(dataFrame)
+println("Normalized using L^1 norm")
+l1NormData.show()
+ 
+// Normalize each Vector using $L^\infty$ norm.
+val lInfNormData = normalizer.transform(dataFrame, normalizer.p -> Double.PositiveInfinity)
+println("Normalized using L^inf norm")
+lInfNormData.show()
