@@ -22,3 +22,14 @@ group by t.l4_gds_group_cd,t.l4_gds_group_desc order by l4sum desc;
 select l4_gds_group_cd,l4_gds_group_desc,round(sum(pay_amt),0) as l4sum from BI_DPA.TDPA_OR_ORDER_DETAIL_D
 where statis_date >='20170301' and statis_date <='20180301' and pay_date = statis_date
 group by l4_gds_group_cd,l4_gds_group_desc  order by l4sum desc ;
+
+select * from 
+(select GDS_CD,count(GDS_EVAL_PNT) as GDS_EVAL_PNT,sum(case when GDS_EVAL_PNT>=4 then 1 else 0 end) as G_GDS_EVAL_PNT from BI_SOR.TSOR_SVC_GDS_EVAL_D_IST group by GDS_CD) a
+join 
+(select GDS_CD,count(GDS_EVAL_PNT) as GDS_EVAL_PNT,count(case when GDS_EVAL_PNT>=4 then GDS_CD else GDS_CD end) as G_GDS_EVAL_PNT from BI_SOR.TSOR_SVC_GDS_EVAL_D_IST group by GDS_CD) b
+on a.GDS_CD = b.GDS_CD
+
+
+select GDS_CD,count(GDS_EVAL_PNT) as GDS_EVAL_PNT,sum(case when GDS_EVAL_PNT>=4 then 1 else 0 end) as G_GDS_EVAL_PNT from BI_SOR.TSOR_SVC_GDS_EVAL_D_IST group by GDS_CD
+union all
+select GDS_CD,count(GDS_EVAL_PNT) as GDS_EVAL_PNT,count(case when GDS_EVAL_PNT>=4 then GDS_CD else GDS_CD end) as G_GDS_EVAL_PNT from BI_SOR.TSOR_SVC_GDS_EVAL_D_IST group by GDS_CD
