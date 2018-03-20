@@ -1,5 +1,6 @@
-#http://www.cnblogs.com/charlotte77/p/5629865.html
 #coding:utf-8
+#https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
+#http://www.cnblogs.com/charlotte77/p/5629865.html
 import random
 import math
 
