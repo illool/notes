@@ -1,5 +1,5 @@
-mport java.util.Random;
 
+import java.util.Random; 
 /**
 * 语句标签测试
 *
@@ -12,16 +12,20 @@ public class TestLable {
                         System.out.println("\nouter_loop:" + i);
                         inner:
                         for (int k = 0; i < 10; k++) {
-                                System.out.print(k + " ");
+                                System.out.println(k + " ");
                                 int x = new Random().nextInt(10);
                                 if (x > 7) {
-                                        System.out.print(" >>x == " + x + "，结束inner循环，继续迭代执行outer循环了！");
+                                        System.out.println(" >>x == " + x + "，结束inner循环，继续迭代执行outer循环了！");
                                         continue outer;
                                 }
                                 if (x == 1) {
-                                        System.out.print(" >>x == 1，跳出并结束整个outer和inner循环！");
+                                        System.out.println(" >>x == 1，跳出并结束整个outer和inner循环！");
                                         break outer;
                                 }
+                                if (x > 5) {
+                                    System.out.println(" >>x > 5，继续inner循环！");
+                                    continue inner;
+                            }
                         }
                 }
                 System.out.println("------>>>所有循环执行完毕！");
