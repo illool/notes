@@ -1,33 +1,45 @@
+package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.util.Random; 
+import java.util.Random;
+
 /**
-* 语句标签测试
-*
-* @author leizhimin 2009-7-16 11:43:08
-*/
+ * 语句标签测试
+ *
+ * @author leizhimin 2009-7-16 11:43:08
+ */
 public class TestLable {
-        public static void main(String[] args) {
-                outer:
-                for (int i = 0; i < 10; i++) {
-                        System.out.println("\nouter_loop:" + i);
-                        inner:
-                        for (int k = 0; i < 10; k++) {
-                                System.out.println(k + " ");
-                                int x = new Random().nextInt(10);
-                                if (x > 7) {
-                                        System.out.println(" >>x == " + x + "，结束inner循环，继续迭代执行outer循环了！");
-                                        continue outer;
-                                }
-                                if (x == 1) {
-                                        System.out.println(" >>x == 1，跳出并结束整个outer和inner循环！");
-                                        break outer;
-                                }
-                                if (x > 5) {
-                                    System.out.println(" >>x > 5，继续inner循环！");
-                                    continue inner;
-                            }
-                        }
-                }
-                System.out.println("------>>>所有循环执行完毕！");
-        }
+	public static void main(String[] args) {
+        System.out.println("标签只能使用于循环！");
+		outer: for (int i = 0; i < 10; i++) {
+			System.out.println("\nouter_loop:" + i);
+			inner: for (int k = 0; i < 10; k++) {
+				System.out.println(k + " ");
+				int x = new Random().nextInt(10);
+				if (x > 7) {
+					System.out.println(" >>x == " + x + "，结束inner循环，继续迭代执行outer循环了！");
+					continue outer;
+				}
+				if (x == 1) {
+					System.out.println(" >>x == 1，跳出并结束整个outer和inner循环！");
+					break outer;
+				}
+				if (x > 5) {
+					System.out.println(" >>x > 5，继续inner循环！");
+					continue inner;
+				}
+			}
+		}
+		System.out.println("------>>>所有循环执行完毕！");
+		label1: while (true) {
+			int xx = new Random().nextInt(10);
+			if (xx > 7) {
+				System.out.println(" >>x == " + xx + "，继续循环，");
+				continue label1;
+			}
+			if (xx < 7) {
+				System.out.println(" >>x == " + xx + "，结束循环，");
+				break label1;
+			}
+		}
+	}
 }
