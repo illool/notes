@@ -2,7 +2,7 @@ package tspsolver;
 import java.io.*;
 /**
  *蚁群优化算法，用来求解TSP问题
- * @author FashionXu
+ * @author 17093220
  */
 public class ACO {
     //定义蚂蚁群
