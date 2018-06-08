@@ -2,7 +2,7 @@ package tspsolver;
 import java.util.Random;
 /**
  *蚂蚁类
- * @author FashionXu
+ * @author 17093220
  */
 public class ant {
     /**
