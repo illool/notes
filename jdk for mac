@@ -13,3 +13,9 @@ export CLASSPATH
 source .bash_profile
 5:
 echo $JAVA_HOME
+6:
+sudo rm -fr /Library/Internet\ Plug-Ins/JavaAppletPlugin.plugin
+sudo rm -fr /Library/PreferencesPanes/JavaControlPanel.prefPane
+sudo rm -fr ~/Library/Application\ Support/Java
+7:
+从finder中进入 /Library/Java/JavaVirtualMachines，然后删除jdk1.8.xxx，彻底卸载完成。
