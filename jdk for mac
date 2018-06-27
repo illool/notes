@@ -1,0 +1,15 @@
+1:
+touch .bash_profile
+2:
+open -e .bash_profile”
+3:
+JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_40.jdk/Contents/Home
+PATH=$JAVA_HOME/bin:$PATH:.
+CLASSPATH=$JAVA_HOME/lib/tools.jar:$JAVA_HOME/lib/dt.jar:.
+export JAVA_HOME
+export PATH
+export CLASSPATH
+4:
+source .bash_profile
+5:
+echo $JAVA_HOME
